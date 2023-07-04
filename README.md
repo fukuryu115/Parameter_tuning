@@ -1,5 +1,4 @@
-# Autoencoder_VAE
-Autoencoder_VAE
+# Parameter_tuning
 
 # 使用しているポートとその用途
 ※ホストと仮想環境のIPは全部一緒
@@ -10,7 +9,7 @@ Autoencoder_VAE
 |6002|予備|
 
 # docker内への入り方
-'docekr exec -it m1tutorial_parameter_tuning bash'
+'docker exec -it m1tutorial_parameter_tuning bash'
 
 # tokenの確認方法
 コンテナ内で
