@@ -2,7 +2,7 @@
 from getpass import getuser
 
 uname = getuser()
-
+print("loaded python script")
 c = get_config()  #noqa
 
 #------------------------------------------------------------------------------
@@ -1003,7 +1003,7 @@ c.ServerApp.port = 62222
 
 ## The directory to use for notebooks and kernels.
 #  Default: ''
-c.ServerApp.root_dir = f'/home/{uname}/Paramter_tuning/'
+c.ServerApp.root_dir = f'/home/{uname}/Parameter_tuning/'
 
 ## The session manager class to use.
 #  Default: 'builtins.object'
