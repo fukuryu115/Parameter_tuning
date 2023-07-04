@@ -4,7 +4,7 @@ import torchvision
 import torchvision.transforms as T
 from torch.utils.data import DataLoader
 
-# CIFER10の取得
+# CIFAR10の取得
 transform = T.Compose([T.ToTensor()])
 
 path = os.path.dirname(os.path.abspath(__file__))
