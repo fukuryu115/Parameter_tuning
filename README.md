@@ -9,8 +9,8 @@
 |6002|予備|
 
 # docker内への入り方
-'docker exec -it m1tutorial_parameter_tuning bash'
+`docker exec -it m1tutorial_parameter_tuning bash`
 
 # tokenの確認方法
 コンテナ内で
-'jupyter server list'
+`jupyter server list`
