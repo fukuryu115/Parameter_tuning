@@ -4,15 +4,15 @@ from datetime import datetime
 import os
 
 # データセットのディレクトリパス
-path = os.chdir(os.path.dirname(os.path.abspath(__file__)))
-dataset_dir = f'{path}/../dataset/'
+current_dir = os.path.dirname(os.path.abspath(__file__))
+dataset_dir = os.path.join(current_dir, "../dataset")
 
 # 画像データの前処理
 datagen = ImageDataGenerator(rescale=1./255)
 
 # 訓練データの読み込みと前処理
 train_generator = datagen.flow_from_directory(
-    dataset_dir + "train/",
+    os.path.join(dataset_dir, "train"),
     target_size=(28, 28),
     color_mode="grayscale",
     class_mode="categorical",
@@ -21,7 +21,7 @@ train_generator = datagen.flow_from_directory(
 
 # テストデータの読み込みと前処理
 test_generator = datagen.flow_from_directory(
-    dataset_dir + "test/",
+    os.path.join(dataset_dir, "test"),
     target_size=(28, 28),
     color_mode="grayscale",
     class_mode="categorical",
@@ -42,7 +42,7 @@ model.compile(optimizer='adam',
               metrics=['accuracy'])
 
 # TensorBoardコールバックの設定
-log_dir = "logs/" + datetime.now().strftime("%Y%m%d-%H%M%S")
+log_dir = os.path.join(current_dir, "logs", datetime.now().strftime("%Y%m%d-%H%M%S"))
 tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1, port=6001)
 
 # モデルの訓練
