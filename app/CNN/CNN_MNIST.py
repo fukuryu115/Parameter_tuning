@@ -1,10 +1,10 @@
 import tensorflow as tf
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from datetime import datetime
+import os
 
 # データセットのディレクトリパス
 path = os.chdir(os.path.dirname(os.path.abspath(__file__)))
-
 dataset_dir = f'{path}/../dataset/'
 
 # 画像データの前処理
