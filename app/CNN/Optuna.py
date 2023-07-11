@@ -113,7 +113,7 @@ def get_activation(trial):
         activation = F.elu
     return activation
 
-EPOCH = 10
+EPOCH = 1
 def objective(trial):
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -137,7 +137,7 @@ def objective(trial):
     return error_rate
 
 if __name__ == "__main__":
-    TRIAL_SIZE = 100
+    TRIAL_SIZE = 1
     print("tuning start")
     study = optuna.create_study()
     study.optimize(objective, n_trials=TRIAL_SIZE)
