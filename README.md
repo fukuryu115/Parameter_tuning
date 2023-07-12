@@ -1,4 +1,18 @@
 # Parameter_tuning
+MNISTを用いてAEとVAEを訓練し、双方の潜在空間を比較し考察する
+
+# セットアップ方法
+
+```bash
+git clone https://github.com/fukuryu115/Parameter_tuning.git
+cd Parameter_tuning
+cd docker
+source build_docker.sh {任意のパスワード}
+source run_docker.sh
+```
+`http://localhost:62222`にアクセス
+
+`notebook`内のJupyter notebookを実行
 
 # 使用しているポートとその用途
 ※ホストと仮想環境のIPは全部一緒
