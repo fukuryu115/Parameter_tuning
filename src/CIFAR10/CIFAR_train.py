@@ -12,12 +12,13 @@ from torchvision.datasets import CIFAR10
 from torchvision import transforms
 import numpy as np
 import string
-import argparse  
+import argparse
+import datetime  
 
 path = os.path.dirname(os.path.abspath(__file__))
 parser = argparse.ArgumentParser(description='ハイパーパラメータ')    
 # 3. parser.add_argumentで受け取る引数を追加していく
-parser.add_argument('--epoch', default=3,type=int, help='epoch')
+parser.add_argument('--epoch', default=10,type=int, help='epoch')
 parser.add_argument('--activation', default="ReLU", help='ReLU or ELU')  
 parser.add_argument('--optimizer', default="Adam", help='Adam or MomentumSGD or rmsprop')  
 parser.add_argument('--weight_decay', default=1.3452825924268737e-07,type=float, help='1e-10, 1e-3')
@@ -27,7 +28,15 @@ parser.add_argument('--num_layer', default=5,type=int, help='3 to 7')
 parser.add_argument('--mid_units', default=500,type=int, help='100 to 500')
 tp = lambda x:list(map(int, x.split('.')))
 parser.add_argument('--num_filter',default=[112,48,80,96,112], type=tp, help='16 to 128 list')
-args = parser.parse_args() 
+parser.add_argument('--filename', default='',type=str, help='save name of logs.')
+args = parser.parse_args()
+
+
+path=os.path.dirname(os.path.abspath(__file__))
+if args.filename == '':
+    save_name = 'no_name'
+else:
+    save_name = args.filename 
 
 if not os.path.exists(path+"/../../logs/CIFAR10"):
     os.makedirs(path+"/../../logs/CIFAR10")
@@ -35,9 +44,9 @@ writer = SummaryWriter(log_dir=path+"/../../logs/CIFAR10")
 BATCHSIZE = 128
 # ToTensor：画像のグレースケール化（RGBの0~255を0~1の範囲に正規化）、Normalize：Z値化（RGBの平均と標準偏差を0.5で決め打ちして正規化）
 transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-train_set = torchvision.datasets.CIFAR10(root=path+"/../../dataset/CIFAR10", train=True, download=True, transform=transform)
+train_set = torchvision.datasets.CIFAR10(root=path+"/../../dataset/CIFAR10", train=True, download=False, transform=transform)
 train_loader = torch.utils.data.DataLoader(train_set, batch_size=4, shuffle=True, num_workers=2)
-test_set = torchvision.datasets.CIFAR10(root=path+"/../../dataset/CIFAR10", train=False, download=True, transform=transform)
+test_set = torchvision.datasets.CIFAR10(root=path+"/../../dataset/CIFAR10", train=False, download=False, transform=transform)
 test_loader = torch.utils.data.DataLoader(test_set, batch_size=4, shuffle=True, num_workers=2)
 classes = tuple(np.linspace(0, 9, 10, dtype=np.uint8))
 
@@ -92,7 +101,7 @@ class Net(nn.Module):
         
 def train(model, step,device, train_loader, optimizer):
     model.train()
-    print("\nTrain start")
+    #print("\nTrain start")
     i=0
     train_loss=0.0
     for batch_idx, (data, target) in enumerate(train_loader):
@@ -105,15 +114,16 @@ def train(model, step,device, train_loader, optimizer):
         optimizer.step()
         train_loss += loss.item()
         if i % 100 == 99:
-            print("Training: {} epoch. {} iteration. Loss: {}".format(step+1,i+1,loss.item()))
+            pass
+            #print("Training: {} epoch. {} iteration. Loss: {}".format(step+1,i+1,loss.item()))
     train_loss /= len(train_loader)
-    print("Training loss (ave.): {}".format(train_loss))
+    #print("Training loss (ave.): {}".format(train_loss))
     history["train_loss"].append(train_loss)
     global jex
     writer.add_scalar("train_loss", train_loss, jex)
     jex+=1
 def test(model, device, test_loader):
-    print("\nValidation start")
+    #print("\nValidation start")
     model.eval()
     correct = 0.0
     val_loss = 0.0
@@ -125,11 +135,11 @@ def test(model, device, test_loader):
             val_loss += F.nll_loss(output,target,reduction='sum').item()
             pred = output.max(1, keepdim=True)[1]
             correct += pred.eq(target.view_as(pred)).sum().item()
-        val_loss /= len(test_loader)
+        val_loss /= len(test_loader.dataset)
         #correct /= len(test_loader)
         correct /= len(test_loader.dataset)
 
-        print("Validation loss: {}, Accuracy: {}\n".format(val_loss,correct))
+        #print("Validation loss: {}, Accuracy: {}\n".format(val_loss,correct))
         history["validation_loss"].append(val_loss)
         history["validation_acc"].append(correct)
         global iex
@@ -179,7 +189,9 @@ def objective(epoch):
     optimizer = get_optimizer(model)
 
     for step in range(epoch):
-        print("step")
+        i = step + 1
+        bar = '*' * i + " " * (epoch - i)
+        print(f"\r\033[K[{bar}] {i/epoch*100:.02f}% ({i}/{epoch})", end="")
         train(model, step,device, train_loader, optimizer)
         error_rate = test(model, device, test_loader)
 
@@ -192,20 +204,34 @@ def objective(epoch):
 
 if __name__ == "__main__":
     epoch = args.epoch
-    print(objective(epoch))
-    print(history)
-    if not os.path.exists(path+"/img/"):
-        os.makedirs(path+"/img/")
-    plt.figure()
-    plt.plot(range(1, epoch+1), history["train_loss"], label="train_loss")
-    plt.plot(range(1, epoch+1), history["validation_loss"], label="validation_loss")
-    plt.xlabel("epoch")
-    plt.legend()
-    plt.savefig(path+"img/loss.png")
+    objective(epoch)
+    #print(history)
+    
+    if not os.path.exists(path+"/img/"+save_name):
+        os.makedirs(path+"/img/"+save_name)
 
-    plt.figure()
-    plt.plot(range(1, epoch+1), history["validation_acc"])
-    plt.title("test accuracy")
-    plt.xlabel("epoch")
-    plt.savefig(path+"img/test_acc.png")
+    ntime = datetime.datetime.now().strftime('%Y%m%d %H:%M:%S')
+    print('\n')
+    print(ntime)
+    fig,ax = plt.subplots()
+    
+    ax.plot(range(1, epoch+1), history["train_loss"], label="train_loss")
+    ax.plot(range(1, epoch+1), history["validation_loss"], label="validation_loss")
+    
+    ax.text(0.5,0.5,'train_loss = {}'.format(np.average(history["train_loss"][-5:-1])),transform=ax.transAxes)
+    ax.text(0.5,0.4,'validation_loss = {}'.format(np.average(history["validation_loss"][-5:-1])),transform=ax.transAxes)
+    ax.set_xlabel("epoch")
+    ax.legend()
+    plt.savefig(path+"/img/"+save_name+"/loss.png")
+
+    fig, ax = plt.subplots()
+    ax.plot(range(1, epoch+1), history["validation_acc"])
+    ax.set_title("test accuracy")
+    ax.set_xlabel("epoch")
+    ax.text(0.5,0.5,'test_acc = {}'.format(np.average(history["validation_acc"][-5:-1])),transform=ax.transAxes)
     writer.close()
+
+    print('train_loss = {}'.format(np.average(history["train_loss"][-5:-1])))
+    print('validation_loss = {}'.format(np.average(history["validation_loss"][-5:-1])))
+    print('test_acc = {}'.format(np.average(history["validation_acc"][-5:-1])))
+    plt.savefig(path+"/img/"+save_name+"/test_acc.png")

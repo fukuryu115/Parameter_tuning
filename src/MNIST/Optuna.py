@@ -113,7 +113,7 @@ def get_activation(trial):
         activation = F.elu
     return activation
 
-EPOCH = 1
+EPOCH = 10
 def objective(trial):
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -130,15 +130,18 @@ def objective(trial):
     optimizer = get_optimizer(trial, model)
 
     for step in range(EPOCH):
-        print("step")
+        #print("step")
+        i = step + 1
+        bar = '*' * i + " " * (EPOCH - i)
+        print(f"\r\033[K[{bar}] {i/EPOCH*100:.02f}% ({i}/{EPOCH})", end="")
         train(model, device, train_loader, optimizer)
         error_rate = test(model, device, test_loader)
 
     return error_rate
 
 if __name__ == "__main__":
-    TRIAL_SIZE = 1
-    print("tuning start")
+    TRIAL_SIZE = 100
+    #print("tuning start")
     study = optuna.create_study()
     study.optimize(objective, n_trials=TRIAL_SIZE)
     print(study.best_params)
